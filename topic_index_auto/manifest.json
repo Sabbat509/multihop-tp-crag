@@ -1,0 +1,36 @@
+{
+  "created_at": "20260518_144432",
+  "base_index_dir": "/root/rag-evaluation/datasets/multihop_rag/indexes/full_corpus/vector_index",
+  "topic_map_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_auto/topic_article_map.jsonl",
+  "topic_info_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_auto/topic_info_auto.csv",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "chunk_count": 3504,
+  "topic_assigned_chunk_count": 3504,
+  "topic_missing_chunk_count": 0,
+  "topic_count_including_outlier": 8,
+  "chunks_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_index_auto/chunks.jsonl",
+  "embeddings_path": "/root/rag-evaluation/datasets/multihop_rag/indexes/full_corpus/vector_index/embeddings.npy",
+  "base_manifest": {
+    "created_at": "20260518_121404",
+    "doc_data_path": "datasets/multihop_rag/intermediate/doc_data.pkl",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "embedding_shape": [
+      3504,
+      384
+    ],
+    "chunk_count": 3504,
+    "document_count_available": 609,
+    "document_count_indexed": 609,
+    "chunk_size_words": 400,
+    "chunk_overlap_words": 80,
+    "min_chunk_words": 40,
+    "chunks_path": "datasets/multihop_rag/indexes/full_corpus/vector_index/chunks.jsonl",
+    "embeddings_path": "datasets/multihop_rag/indexes/full_corpus/vector_index/embeddings.npy",
+    "topic_map_path": null,
+    "topic_aware": false,
+    "topic_assigned_chunk_count": 0,
+    "topic_missing_chunk_count": 3504,
+    "index_type": "normalized_numpy_dot_product",
+    "elapsed_sec": 13.742
+  }
+}
