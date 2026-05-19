@@ -4,7 +4,7 @@ This repository contains a standalone Topic-Partitioned CRAG evaluation on the M
 
 ## Experiment
 
-Dataset: `yixuantt/MultiHopRAG`
+Dataset: [`yixuantt/MultiHopRAG`](https://github.com/yixuantt/MultiHop-RAG/)
 
 RAG method: Topic-Partitioned CRAG
 
