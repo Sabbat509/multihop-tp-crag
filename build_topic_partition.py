@@ -32,7 +32,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--nr-topics",
         default="40",
-        help='Fixed topic count, or "auto" to let BERTopic reduce topics automatically.',
+        help='Fixed topic count, "auto", or "none" to let HDBSCAN keep the natural topic count.',
     )
     parser.add_argument("--min-topic-size", type=int, default=100)
     parser.add_argument("--batch-size", type=int, default=32)
@@ -43,6 +43,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hdbscan-min-samples", type=int, default=10)
     parser.add_argument("--max-df", type=float, default=0.85)
     parser.add_argument("--max-features", type=int, default=10000)
+    parser.add_argument("--min-df", type=int, default=2)
+    parser.add_argument("--ngram-range", default="1,2", help="Comma form, e.g. 1,2 for unigrams+bigrams.")
     parser.add_argument("--top-n-words", type=int, default=12)
     parser.add_argument("--backend", choices=["auto", "cuml", "cpu"], default="auto")
     parser.add_argument("--max-documents", type=int, help="Optional smoke/debug cap. Omit for full corpus.")
@@ -126,10 +128,18 @@ def main() -> int:
     print(f"BERTopic backend: {backend}")
 
     nr_topics: int | str
-    if str(args.nr_topics).strip().lower() == "auto":
+    nr_topics_arg = str(args.nr_topics).strip().lower()
+    if nr_topics_arg == "auto":
         nr_topics = "auto"
+    elif nr_topics_arg in {"none", "null", "natural"}:
+        nr_topics = None
     else:
         nr_topics = int(args.nr_topics)
+
+    ngram_parts = [int(part.strip()) for part in str(args.ngram_range).split(",") if part.strip()]
+    if len(ngram_parts) != 2:
+        raise ValueError("--ngram-range must look like 1,2")
+    ngram_range = (ngram_parts[0], ngram_parts[1])
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -164,10 +174,10 @@ def main() -> int:
     vectorizer_model = CountVectorizer(
         token_pattern=r"(?u)\b\w+\b",
         stop_words="english",
-        min_df=2,
+        min_df=args.min_df,
         max_df=args.max_df,
         max_features=args.max_features,
-        ngram_range=(1, 2),
+        ngram_range=ngram_range,
         lowercase=True,
     )
     topic_model = BERTopic(
@@ -183,7 +193,7 @@ def main() -> int:
     )
     topics, _ = topic_model.fit_transform(docs, embeddings=np.asarray(embeddings))
 
-    stem = str(nr_topics)
+    stem = "none" if nr_topics is None else str(nr_topics)
     topics_path = args.output_dir / f"topics_{stem}.npy"
     valid_indices_path = args.output_dir / f"valid_indices_{stem}.pkl"
     topic_info_path = args.output_dir / f"topic_info_{stem}.csv"
@@ -212,6 +222,8 @@ def main() -> int:
             "umap_min_dist": args.umap_min_dist,
             "max_df": args.max_df,
             "max_features": args.max_features,
+            "min_df": args.min_df,
+            "ngram_range": list(ngram_range),
             "top_n_words": args.top_n_words,
             "backend": backend,
             "document_count_available": len(doc_data),

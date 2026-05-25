@@ -10,16 +10,25 @@ RAG method: Topic-Partitioned CRAG
 
 Local model: Ollama `gemma2:2b`
 
-Topic partitioning:
+Topic partitioning follows Kiraffe's updated hyperparameter recommendation from [`BERTopic-for-RAG/bertopic_hyperparameter_experiment_summary.md`](https://github.com/Kiraffe1206/BERTopic-for-RAG/blob/main/bertopic_hyperparameter_experiment_summary.md), updated 2026-05-22:
 
-- BERTopic `nr_topics=auto`
-- 7 real topic partitions plus 1 outlier/unclassified bucket
-- 8 total topic buckets including outliers
+```text
+uc=10, un=5, hcs=5, hms=3, max_df=0.85, ngram=(1,2), nr_topics=None
+```
+
+Local fit result:
+
+```text
+52 non-outlier topics
+53 total topic IDs including outlier -1
+68 outlier documents
+609 documents topic-modeled
+```
 
 Pipeline:
 
 1. Build a full-corpus vector index from the MultiHop-RAG corpus.
-2. Build BERTopic topic partitions using Kiraffe-style automatic topic reduction.
+2. Build BERTopic topic partitions using Kiraffe's updated MultiHop-RAG hyperparameters.
 3. Attach topic IDs to all corpus chunks.
 4. Extract query knowledge points and route to the closest topic profiles.
 5. Retrieve from selected topic partitions.
@@ -32,43 +41,61 @@ No external web search API is used. The CRAG fallback branch queries the MultiHo
 
 ## Final Result
 
+Full evaluation: 2,556 MultiHop-RAG examples.
+
 | Method | EM | Acc | F1 | G-Sem | Tok |
 |---|---:|---:|---:|---:|---:|
-| TP-CRAG | 60.33 | 64.28 | 61.75 | 78.16 | 1.38 |
+| TP-CRAG | 60.33 | 64.20 | 61.77 | 78.00 | 1.39 |
 
-Raw metric values are stored in `results/reference_crag_topic_full_corpus/summary.json`.
+LaTeX row:
+
+```latex
+TP-CRAG & 60.33 & 64.20 & 61.77 & 78.00 & 1.39
+```
+
+Raw metric values are stored in `results/reference_crag_topic_kiraffe_20260522_full/summary.json`.
 
 CRAG branch counts:
 
 | Branch | Count |
 |---|---:|
-| Correct | 1310 |
-| Ambiguous | 947 |
-| Incorrect | 299 |
+| Correct | 1227 |
+| Ambiguous | 848 |
+| Incorrect | 481 |
+
+## Modifications / Adaptations
+
+The dataset examples and corpus content are unchanged. The update in this repo replaces the earlier topic partition with Kiraffe's 2026-05-22 recommended MultiHop-RAG BERTopic hyperparameters:
+
+- Changed topic modeling from the previous `nr_topics=auto` setup to natural HDBSCAN topics with `nr_topics=None`.
+- Changed BERTopic/UMAP/HDBSCAN settings to `uc=10`, `un=5`, `hcs=5`, `hms=3`, `max_df=0.85`, `ngram=(1,2)`.
+- Rebuilt topic artifacts under `topic_partition_kiraffe_20260522/`.
+- Rebuilt the topic-aware chunk index under `topic_index_kiraffe_20260522/`.
+- Reran the full 2,556-example TP-CRAG evaluation.
+- Compressed full records as `records.jsonl.gz` because the uncompressed file is larger than GitHub's 100 MB file limit.
 
 ## Files
 
 ```text
-evaluate_multihop_crag_topic_rag.py      # MultiHop-RAG TP-CRAG evaluator
-evaluate_crag_topic_rag.py               # HotpotQA TP-CRAG reference/adaptation source
-build_topic_partition.py                 # BERTopic topic partition builder
-build_crag_topic_index.py                # attach topic IDs to chunk index
-build_multihop_doc_data.py               # normalize MultiHop-RAG corpus into doc_data.pkl
-build_reference_index.py                 # build normalized numpy vector index
-crag_topic_rag/                          # CRAG branch logic and topic router
-naive_rag/                               # shared retrieval, IO, chunking, and LLM utilities
-topic_partition_auto/                    # BERTopic auto partition artifacts
-topic_index_auto/                        # topic-aware chunk metadata
-results/reference_crag_topic_full_corpus/
-  summary.json                           # final metrics
-  predictions.csv                        # final predictions table
-  records.jsonl.gz                       # compressed full per-example records
+evaluate_multihop_crag_topic_rag.py              # MultiHop-RAG TP-CRAG evaluator
+build_topic_partition.py                         # BERTopic topic partition builder
+build_crag_topic_index.py                        # attach topic IDs to chunk index
+build_multihop_doc_data.py                       # normalize MultiHop-RAG corpus into doc_data.pkl
+build_reference_index.py                         # build normalized numpy vector index
+crag_topic_rag/                                  # CRAG branch logic and topic router
+naive_rag/                                       # shared retrieval, IO, chunking, and LLM utilities
+topic_partition_kiraffe_20260522/                # updated BERTopic artifacts
+topic_index_kiraffe_20260522/                    # updated topic-aware chunk metadata
+results/reference_crag_topic_kiraffe_20260522_full/
+  summary.json                                   # final metrics
+  predictions.csv                                # final predictions table
+  records.jsonl.gz                               # compressed full per-example records
 ```
 
 To inspect full records:
 
 ```bash
-gunzip -c results/reference_crag_topic_full_corpus/records.jsonl.gz | head
+gunzip -c results/reference_crag_topic_kiraffe_20260522_full/records.jsonl.gz | head
 ```
 
 ## Reproduce
@@ -94,24 +121,28 @@ python build_reference_index.py \
   --device cuda:0
 ```
 
-Build topic partitioning and topic-aware index:
+Build Kiraffe-updated topic partitioning and topic-aware index:
 
 ```bash
 python build_topic_partition.py \
   --doc-data datasets/multihop_rag/intermediate/doc_data.pkl \
-  --output-dir topic_partition_auto \
-  --nr-topics auto \
+  --output-dir topic_partition_kiraffe_20260522 \
+  --nr-topics none \
+  --umap-n-components 10 \
+  --umap-n-neighbors 5 \
   --min-topic-size 5 \
   --hdbscan-min-samples 3 \
-  --umap-n-components 5 \
-  --backend cpu \
+  --max-df 0.85 \
+  --ngram-range 1,2 \
+  --min-df 1 \
+  --backend auto \
   --device cuda:0
 
 python build_crag_topic_index.py \
   --base-index-dir datasets/multihop_rag/indexes/full_corpus/vector_index \
-  --topic-map topic_partition_auto/topic_article_map.jsonl \
-  --topic-info topic_partition_auto/topic_info_auto.csv \
-  --output-dir topic_index_auto
+  --topic-map topic_partition_kiraffe_20260522/topic_article_map.jsonl \
+  --topic-info topic_partition_kiraffe_20260522/topic_info_none.csv \
+  --output-dir topic_index_kiraffe_20260522
 ```
 
 Start Ollama with Gemma:
@@ -126,9 +157,9 @@ Run evaluation:
 ```bash
 python evaluate_multihop_crag_topic_rag.py \
   --data-file datasets/multihop_rag/raw/qa.jsonl \
-  --index-dir topic_index_auto \
-  --topic-info topic_partition_auto/topic_info_auto.csv \
-  --output-dir results/reference_crag_topic_full_corpus \
+  --index-dir topic_index_kiraffe_20260522 \
+  --topic-info topic_partition_kiraffe_20260522/topic_info_none.csv \
+  --output-dir results/reference_crag_topic_kiraffe_20260522_full \
   --device cuda:0 \
   --model gemma2:2b \
   --resume

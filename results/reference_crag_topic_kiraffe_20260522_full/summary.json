@@ -1,0 +1,74 @@
+{
+  "count": 2556,
+  "config": {
+    "dataset": "yixuantt/MultiHopRAG",
+    "split": "train",
+    "start": 0,
+    "limit": null,
+    "index_dir": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_index_kiraffe_20260522",
+    "topic_info_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_kiraffe_20260522/topic_info_none.csv",
+    "top_k": 5,
+    "fallback_top_k": 5,
+    "router_top_topics": 5,
+    "router_max_knowledge_points": 6,
+    "router_max_keywords": 12,
+    "topic_partitioning": true,
+    "crag": true,
+    "crag_pipeline": "official_adapted_topic_partition_full_corpus_fallback",
+    "evaluator_path": null,
+    "evaluator_type": "embedding_fallback",
+    "upper_threshold": 0.6,
+    "lower_threshold": 0.45,
+    "decompose_mode": "selection",
+    "internal_top_n": 3,
+    "external_top_n": 5,
+    "model_name": "gemma2:2b",
+    "embedding_model": "all-MiniLM-L6-v2"
+  },
+  "metrics": {
+    "EM": 0.6032863849765259,
+    "Acc": 0.642018779342723,
+    "F1": 0.6176836607057719,
+    "G-Sem": 0.7799645754744056,
+    "Token": 1.3884976525821595
+  },
+  "metrics_by_question_type": {
+    "comparison_query": {
+      "count": 856,
+      "EM": 0.580607476635514,
+      "Acc": 0.5817757009345794,
+      "F1": 0.5956608811748999,
+      "G-Sem": 0.8373447111840403,
+      "Token": 1.3481308411214954
+    },
+    "inference_query": {
+      "count": 816,
+      "EM": 0.8602941176470589,
+      "Acc": 0.8860294117647058,
+      "F1": 0.8832244008714597,
+      "G-Sem": 0.9235496683521014,
+      "Token": 1.5723039215686274
+    },
+    "null_query": {
+      "count": 301,
+      "EM": 0.0,
+      "Acc": 0.19269102990033224,
+      "F1": 0.0,
+      "G-Sem": 0.1292444144335399,
+      "Token": 1.4551495016611296
+    },
+    "temporal_query": {
+      "count": 583,
+      "EM": 0.5883361921097771,
+      "Acc": 0.6209262435677531,
+      "F1": 0.5972600538029631,
+      "G-Sem": 0.8307088919712381,
+      "Token": 1.1560891938250428
+    }
+  },
+  "crag": {
+    "correct": 1227,
+    "ambiguous": 848,
+    "incorrect": 481
+  }
+}

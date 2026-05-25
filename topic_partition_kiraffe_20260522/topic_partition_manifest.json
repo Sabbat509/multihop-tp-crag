@@ -1,0 +1,29 @@
+{
+  "created_at": "20260525_033858",
+  "doc_data_path": "/root/rag-evaluation/datasets/multihop_rag/intermediate/doc_data.pkl",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "nr_topics": null,
+  "min_topic_size": 5,
+  "hdbscan_min_samples": 3,
+  "umap_n_neighbors": 5,
+  "umap_n_components": 10,
+  "umap_min_dist": 0.0,
+  "max_df": 0.85,
+  "max_features": 10000,
+  "min_df": 1,
+  "ngram_range": [
+    1,
+    2
+  ],
+  "top_n_words": 12,
+  "backend": "cuml",
+  "document_count_available": 609,
+  "document_count_topic_modeled": 609,
+  "topic_count_including_outlier": 53,
+  "outlier_count": 68,
+  "topics_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_kiraffe_20260522/topics_none.npy",
+  "valid_indices_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_kiraffe_20260522/valid_indices_none.pkl",
+  "topic_info_path": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_kiraffe_20260522/topic_info_none.csv",
+  "topic_article_map_jsonl": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_kiraffe_20260522/topic_article_map.jsonl",
+  "topic_article_map_csv": "/root/rag-evaluation/experiments/multihop_rag/topic_crag/topic_partition_kiraffe_20260522/topic_article_map.csv"
+}
